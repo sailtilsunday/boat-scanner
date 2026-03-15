@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Boat Party Scanner</title>
+<script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body>
+<h2>Scan QR Ticket</h2>
+<div id="reader" style="width:300px;"></div>
+<div id="status"></div>
+
+<script>
+const sheetUrl = "https://script.google.com/macros/s/AKfycbw60ucPmIv0lneQB78WycjXNPlCbMosHsY6rskPqKLbTkbmaUNKNfnYErQNEY14Ki3gRw/exec";
+
+function onScanSuccess(decodedText) {
+    document.getElementById("status").innerText = "Scanning...";
+    fetch(sheetUrl + "?ticket=" + encodeURIComponent(decodedText))
+    .then(response => response.text())
+    .then(data => {
+        if(data.startsWith("CHECKED_IN")){
+            document.getElementById("status").innerText = "✅ " + data.split(":")[1] + " checked in!";
+        } else if(data=="ALREADY_CHECKED_IN"){
+            document.getElementById("status").innerText = "⚠️ Ticket already used!";
+        } else {
+            document.getElementById("status").innerText = "❌ Invalid ticket!";
+        }
+    });
+}
+
+const html5QrCode = new Html5Qrcode("reader");
+html5QrCode.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: 250 },
+    onScanSuccess
+);
+</script>
+</body>
+</html>
