@@ -60,7 +60,7 @@ function handleScan(decodedText) {
 
     const ticket = decodedText.trim(); // IMPORTANT
 
-    fetch(sheetUrl + "?ticket=" + encodeURIComponent(ticket))
+    window.location.href = sheetUrl + "?ticket=" + encodeURIComponent(ticket);
     .then(response => response.text())
     .then(data => {
         let statusEl = document.getElementById("status");
