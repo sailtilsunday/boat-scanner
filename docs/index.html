@@ -60,7 +60,7 @@ function handleScan(decodedText) {
 
     const ticket = decodedText.trim();
 
-    fetch(sheetUrl + "?ticket=" + encodeURIComponent(ticket))
+    fetch("https://script.google.com/macros/s/AKfycbxn7u9ZGGnXLQak-tat4wN2hUm0DrZgeXrJI4hL32Cj_mn2vK_9EO4uHaxTFoGpUr1cjQ/exec" + "?ticket=" + encodeURIComponent(ticket))
     .then(res => res.text())
     .then(data => {
 
