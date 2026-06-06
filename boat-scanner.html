@@ -10,16 +10,12 @@
 
     <script>
       function test() {
-        const url = "https://script.google.com/macros/s/AKfycbxn7u9ZGGnXLQak-tat4wN2hUm0DrZgeXrJI4hL32Cj_mn2vK_9EO4uHaxTFoGpUr1cjQ/exec";
+        const ticket = "SAILTILSUNDAY0001";
 
-        fetch(url)
-          .then(res => res.text())
-          .then(data => {
-            document.getElementById("result").innerText = data;
-          })
-          .catch(err => {
-            document.getElementById("result").innerText = "ERROR: " + err.message;
-          });
+        const url = "https://script.google.com/macros/s/AKfycbxn7u9ZGGnXLQak-tat4wN2hUm0DrZgeXrJI4hL32Cj_mn2vK_9EO4uHaxTFoGpUr1cjQ/exec?ticket=" + ticket;
+
+        // Redirect instead of fetch (avoids CORS + Apps Script issues)
+        window.location.href = url;
       }
     </script>
 
