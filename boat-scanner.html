@@ -42,23 +42,12 @@ const sheetUrl = "https://script.google.com/macros/s/AKfycbxcH0c1nzt6j6-4ZWZNlMP
 
 function onScanSuccess(decodedText) {
 
-    document.getElementById("status").innerText = "Scanning...";
+    alert("FUNCTION TRIGGERED: " + decodedText);
 
-    const img = new Image();
-
-    img.onload = function () {
-        document.getElementById("status").innerText =
-            "✅ Checked in (sent)";
-    };
-
-    img.onerror = function () {
-        document.getElementById("status").innerText =
-            "❌ Connection error";
-    };
-
-    img.src = sheetUrl + "?ticket=" + encodeURIComponent(decodedText);
+    document.getElementById("status").innerText =
+        "Triggered: " + decodedText;
 }
-
+    
 function onScanFailure(error) {
     // ignore scan errors (normal while scanning)
 }
