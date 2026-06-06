@@ -58,11 +58,12 @@ function handleScan(decodedText) {
 
     document.getElementById("status").innerText = "Checking ticket...";
 
-    const ticket = decodedText.trim(); // IMPORTANT
+    const ticket = decodedText.trim();
 
-    window.location.href = sheetUrl + "?ticket=" + encodeURIComponent(ticket);
-    .then(response => response.text())
+    fetch(sheetUrl + "?ticket=" + encodeURIComponent(ticket))
+    .then(res => res.text())
     .then(data => {
+
         let statusEl = document.getElementById("status");
 
         if (data.startsWith("CHECKED_IN")) {
@@ -84,22 +85,31 @@ function handleScan(decodedText) {
             statusEl.className = "";
         }, 2000);
     })
-    .catch((err) => {
+    .catch(err => {
         document.getElementById("status").innerText =
-            "❌ Connection error: " + err.message;
-        document.getElementById("status").className = "error";
+            "Connection error: " + err.message;
         scanningEnabled = true;
     });
 }
-
+  
 // Start camera scanner
 const html5QrCode = new Html5Qrcode("reader");
 
-html5QrCode.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: 250 },
-    handleScan
-);
+Html5Qrcode.getCameras().then(devices => {
+    if (devices && devices.length) {
+        html5QrCode.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: 250 },
+            handleScan
+        ).catch(err => {
+            document.getElementById("status").innerText =
+                "Camera error: " + err;
+        });
+    } else {
+        document.getElementById("status").innerText =
+            "No camera found";
+    }
+});
 </script>
 
 </body>
