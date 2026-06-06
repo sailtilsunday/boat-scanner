@@ -14,18 +14,30 @@ const sheetUrl = "https://script.google.com/macros/s/AKfycbxcH0c1nzt6j6-4ZWZNlMP
 
 function onScanSuccess(decodedText) {
     document.getElementById("status").innerText = "Scanning...";
-    fetch(sheetUrl + "?ticket=" + encodeURIComponent(decodedText))
+fetch(sheetUrl + "?ticket=" + encodeURIComponent(decodedText))
     .then(response => response.text())
     .then(data => {
-        if(data.startsWith("CHECKED_IN")){
-            document.getElementById("status").innerText = "✅ " + data.split(":")[1] + " checked in!";
-        } else if(data=="ALREADY_CHECKED_IN"){
-            document.getElementById("status").innerText = "⚠️ Ticket already used!";
+        console.log("RESPONSE FROM APPS SCRIPT:", data);
+        alert("RESPONSE: " + data);
+
+        if (data.startsWith("CHECKED_IN")) {
+            document.getElementById("status").innerText =
+                "✅ " + data.split(":")[1] + " checked in!";
+        } else if (data == "ALREADY_CHECKED_IN") {
+            document.getElementById("status").innerText =
+                "⚠️ Ticket already used!";
         } else {
-            document.getElementById("status").innerText = "❌ Invalid ticket!";
+            document.getElementById("status").innerText =
+                "❌ Invalid ticket!";
         }
+    })
+    .catch(error => {
+        console.log("FETCH ERROR:", error);
+        alert("CONNECTION ERROR: " + error.message);
+
+        document.getElementById("status").innerText =
+            "❌ Connection error";
     });
-}
 
 const html5QrCode = new Html5Qrcode("reader");
 html5QrCode.start(
