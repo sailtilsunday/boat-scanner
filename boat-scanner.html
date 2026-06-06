@@ -2,11 +2,12 @@
 <html>
 <head>
     <title>Boat Scanner</title>
+
     <script src="https://unpkg.com/html5-qrcode"></script>
 
     <style>
         body {
-            font-family: Arial;
+            font-family: Arial, sans-serif;
             text-align: center;
             margin: 0;
             padding: 20px;
@@ -14,13 +15,13 @@
 
         #reader {
             width: 300px;
-            margin: auto;
+            margin: 20px auto;
         }
 
         #status {
-            margin-top: 20px;
             font-size: 18px;
             font-weight: bold;
+            margin-top: 20px;
         }
 
         .ok { color: green; }
@@ -38,54 +39,16 @@
 
 <script>
 
-// 🔴 REPLACE THIS WITH YOUR REAL DEPLOYED SCRIPT URL
-const sheetUrl = "https://script.google.com/macros/s/AKfycbxcH0c1nzt6j6-4ZWZNlMPAMm8aWS4PrQhuqiBXO3cNZg2r5NPae-z_D0xyvJVATydEIw/exec";
+////////////////////////////////////////////////////////////////////////////////
+// 🔴 YOUR APPS SCRIPT URL (MUST BE CORRECT)
+////////////////////////////////////////////////////////////////////////////////
 
-function onScanSuccess(decodedText) {
+const sheetUrl = "https://script.google.com/macros/s/AKfycbxcH0c1nzt6j6-4ZWZNlMPAMm8aWS4PrQhuqiBXO3cNZg2r5NPae-z_D0xyvJVATydEIw/exec"; 
+// ⬆️ REPLACE THIS WITH YOUR REAL DEPLOYED URL
 
-    document.getElementById("status").innerText = "Scanning...";
-
-    const url = sheetUrl + "?ticket=" + encodeURIComponent(decodedText);
-
-    console.log("REQUEST URL:", url);
-
-    fetch(url, { method: "GET", mode: "cors" })
-        .then(response => response.text())
-        .then(data => {
-
-            console.log("RESPONSE:", data);
-
-            let statusDiv = document.getElementById("status");
-
-            if (data.startsWith("CHECKED_IN")) {
-
-                let name = data.split(":")[1] || "Guest";
-
-                statusDiv.innerText = "✅ " + name + " checked in!";
-                statusDiv.className = "ok";
-
-            } else if (data === "ALREADY_CHECKED_IN") {
-
-                statusDiv.innerText = "⚠️ Already checked in!";
-                statusDiv.className = "warn";
-
-            } else {
-
-                statusDiv.innerText = "❌ Invalid ticket!";
-                statusDiv.className = "bad";
-            }
-
-        })
-        .catch(error => {
-
-            console.log("FETCH ERROR:", error);
-
-            document.getElementById("status").innerText =
-                "❌ Connection error";
-
-            alert("FETCH ERROR: " + error.message);
-        });
-}
+////////////////////////////////////////////////////////////////////////////////
+// QR SCAN SUCCESS
+////////////////////////////////////////////////////////////////////////////////
 
 function onScanSuccess(decodedText) {
 
@@ -93,18 +56,73 @@ function onScanSuccess(decodedText) {
 
     const url = sheetUrl + "?ticket=" + encodeURIComponent(decodedText);
 
-    // IMPORTANT: no fetch, no CORS issues
-    const iframe = document.createElement("iframe");
-    iframe.style.display = "none";
-    iframe.src = url;
-    document.body.appendChild(iframe);
+    console.log("REQUEST:", url);
 
-    // optimistic UI update
-    document.getElementById("status").innerText =
-        "✅ Ticket sent (check-in processing)";
+    fetch(url)
+        .then(function(response) {
+            return response.text();
+        })
+        .then(function(data) {
+
+            console.log("RESPONSE:", data);
+
+            const status = document.getElementById("status");
+
+            if (data.startsWith("CHECKED_IN")) {
+
+                const name = data.split(":")[1] || "Guest";
+
+                status.innerText = "✅ " + name + " checked in!";
+                status.className = "ok";
+
+            } 
+            else if (data === "ALREADY_CHECKED_IN") {
+
+                status.innerText = "⚠️ Already checked in!";
+                status.className = "warn";
+
+            } 
+            else {
+
+                status.innerText = "❌ Invalid ticket!";
+                status.className = "bad";
+
+            }
+
+        })
+        .catch(function(error) {
+
+            console.log("ERROR:", error);
+
+            document.getElementById("status").innerText =
+                "❌ Connection error";
+
+        });
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// IGNORE SCAN FAILURES
+////////////////////////////////////////////////////////////////////////////////
+
+function onScanFailure(error) {
+    // do nothing (normal while scanning)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// START SCANNER
+////////////////////////////////////////////////////////////////////////////////
+
+const scanner = new Html5QrcodeScanner(
+    "reader",
+    {
+        fps: 10,
+        qrbox: 250
+    }
+);
+
 scanner.render(onScanSuccess, onScanFailure);
+
+////////////////////////////////////////////////////////////////////////////////
 
 </script>
 
