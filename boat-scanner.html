@@ -14,7 +14,7 @@ const sheetUrl = "https://script.google.com/macros/s/AKfycbxcH0c1nzt6j6-4ZWZNlMP
 
 function onScanSuccess(decodedText) {
     document.getElementById("status").innerText = "Scanning...";
-fetch(sheetUrl + "?ticket=" + encodeURIComponent(decodedText))
+window.location.href = sheetUrl + "?ticket=" + encodeURIComponent(decodedText);
     .then(response => response.text())
     .then(data => {
         console.log("RESPONSE FROM APPS SCRIPT:", data);
