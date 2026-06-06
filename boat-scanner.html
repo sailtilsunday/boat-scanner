@@ -1,56 +1,24 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Boat Scanner</title>
-    <script src="https://unpkg.com/html5-qrcode"></script>
-    <style>
-        body {
-            font-family: Arial;
-            text-align: center;
-            margin: 0;
-            padding: 20px;
-        }
+<script src="https://unpkg.com/html5-qrcode"></script>
 
-        #reader {
-            width: 300px;
-            margin: auto;
-        }
-
-        #status {
-            margin-top: 20px;
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        .ok { color: green; }
-        .warn { color: orange; }
-        .bad { color: red; }
-    </style>
-</head>
-
-<body>
-
-<h2>Boat Event Scanner</h2>
-
-<div id="reader"></div>
-
-<div id="status">Waiting for scan...</div>
+<div id="reader" style="width:300px;"></div>
+<div id="status">Waiting...</div>
 
 <script>
 
-const sheetUrl = "https://script.google.com/macros/s/AKfycbxcH0c1nzt6j6-4ZWZNlMPAMm8aWS4PrQhuqiBXO3cNZg2r5NPae-z_D0xyvJVATydEIw/exec"; // 🔴 REPLACE THIS
-
 function onScanSuccess(decodedText) {
-
-    alert("FUNCTION TRIGGERED: " + decodedText);
-
-    document.getElementById("status").innerText =
-        "Triggered: " + decodedText;
+    alert("SCAN WORKING: " + decodedText);
+    document.getElementById("status").innerText = decodedText;
 }
-    
-html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+
+function onScanFailure(error) {
+    // ignore
+}
+
+let scanner = new Html5QrcodeScanner(
+    "reader",
+    { fps: 10, qrbox: 250 }
+);
+
+scanner.render(onScanSuccess, onScanFailure);
 
 </script>
-
-</body>
-</html>
