@@ -1,110 +1,78 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Boat Scanner</title>
-
-    <script src="https://unpkg.com/html5-qrcode"></script>
+  <head>
+    <base target="_top">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner Test</title>
 
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 20px;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        text-align: center;
+        background: #f5f5f5;
+      }
 
-        #reader {
-            width: 300px;
-            margin: 20px auto;
-        }
+      .box {
+        max-width: 500px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      }
 
-        #status {
-            font-size: 18px;
-            font-weight: bold;
-            margin-top: 20px;
-        }
+      button {
+        padding: 12px 20px;
+        font-size: 16px;
+        border: none;
+        border-radius: 8px;
+        background: #111;
+        color: white;
+        cursor: pointer;
+        margin-top: 10px;
+      }
 
-        .ok { color: green; }
-        .warn { color: orange; }
-        .bad { color: red; }
+      #result {
+        margin-top: 20px;
+        font-size: 18px;
+        font-weight: bold;
+      }
+
+      .ok { color: green; }
+      .fail { color: red; }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
+    <div class="box">
+      <h2>🧪 Connection Test</h2>
+      <p>This tests if your Apps Script backend is responding.</p>
 
-<h2>Boat Event Scanner</h2>
+      <button onclick="runTest()">Run Connection Test</button>
 
-<div id="reader"></div>
-<div id="status">Waiting for scan...</div>
+      <div id="result">Waiting...</div>
+    </div>
 
-<script>
+    <script>
+      function runTest() {
+        document.getElementById("result").innerText = "Testing...";
+        document.getElementById("result").className = "";
 
-////////////////////////////////////////////////////////////////////////////////
-// 🔴 YOUR APPS SCRIPT URL (MUST BE CORRECT)
-////////////////////////////////////////////////////////////////////////////////
-
-const sheetUrl = "https://script.google.com/macros/s/AKfycbxcH0c1nzt6j6-4ZWZNlMPAMm8aWS4PrQhuqiBXO3cNZg2r5NPae-z_D0xyvJVATydEIw/exec"; 
-// ⬆️ REPLACE THIS WITH YOUR REAL DEPLOYED URL
-
-////////////////////////////////////////////////////////////////////////////////
-// QR SCAN SUCCESS
-////////////////////////////////////////////////////////////////////////////////
-
-function onScanSuccess(decodedText) {
-
-    document.getElementById("status").innerText = "Checking ticket...";
-
-    const url = sheetUrl + "?ticket=" + encodeURIComponent(decodedText);
-
-    console.log("OPENING URL:", url);
-
-    // Open Apps Script as real browser request (bypasses CORS completely)
-    const win = window.open(url, "_blank");
-
-    if (!win) {
-        document.getElementById("status").innerText =
-            "❌ Popup blocked - check browser settings";
-        return;
-    }
-
-    // Give it time to hit Apps Script, then close tab
-    setTimeout(() => {
-        try {
-            win.close();
-        } catch (e) {
-            console.log("Could not auto-close tab:", e);
-        }
-    }, 800);
-
-    document.getElementById("status").innerText =
-        "✅ Ticket sent";
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// IGNORE SCAN FAILURES
-////////////////////////////////////////////////////////////////////////////////
-
-function onScanFailure(error) {
-    // do nothing (normal while scanning)
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// START SCANNER
-////////////////////////////////////////////////////////////////////////////////
-
-const scanner = new Html5QrcodeScanner(
-    "reader",
-    {
-        fps: 10,
-        qrbox: 250
-    }
-);
-
-scanner.render(onScanSuccess, onScanFailure);
-
-////////////////////////////////////////////////////////////////////////////////
-
-</script>
-
-</body>
+        // CALLS YOUR APPS SCRIPT BACKEND
+        google.script.run
+          .withSuccessHandler(function(response) {
+            document.getElementById("result").innerText =
+              "SUCCESS: " + JSON.stringify(response);
+            document.getElementById("result").className = "ok";
+          })
+          .withFailureHandler(function(error) {
+            document.getElementById("result").innerText =
+              "ERROR: " + error.message;
+            document.getElementById("result").className = "fail";
+          })
+          .testConnection(); // IMPORTANT: must exist in Code.gs
+      }
+    </script>
+  </body>
 </html>
