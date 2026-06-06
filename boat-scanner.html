@@ -87,14 +87,22 @@ function onScanSuccess(decodedText) {
         });
 }
 
-function onScanFailure(error) {
-    // ignore scan noise
-}
+function onScanSuccess(decodedText) {
 
-let scanner = new Html5QrcodeScanner(
-    "reader",
-    { fps: 10, qrbox: 250 }
-);
+    document.getElementById("status").innerText = "Checking ticket...";
+
+    const url = sheetUrl + "?ticket=" + encodeURIComponent(decodedText);
+
+    // IMPORTANT: no fetch, no CORS issues
+    const iframe = document.createElement("iframe");
+    iframe.style.display = "none";
+    iframe.src = url;
+    document.body.appendChild(iframe);
+
+    // optimistic UI update
+    document.getElementById("status").innerText =
+        "✅ Ticket sent (check-in processing)";
+}
 
 scanner.render(onScanSuccess, onScanFailure);
 
