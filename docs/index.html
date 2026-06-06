@@ -58,7 +58,9 @@ function handleScan(decodedText) {
 
     document.getElementById("status").innerText = "Checking ticket...";
 
-    fetch(sheetUrl + "?ticket=" + encodeURIComponent(decodedText))
+    const ticket = decodedText.trim(); // IMPORTANT
+
+    fetch(sheetUrl + "?ticket=" + encodeURIComponent(ticket))
     .then(response => response.text())
     .then(data => {
         let statusEl = document.getElementById("status");
@@ -76,15 +78,15 @@ function handleScan(decodedText) {
             statusEl.className = "error";
         }
 
-        // Allow scanning again after 2 seconds
         setTimeout(() => {
             scanningEnabled = true;
             statusEl.innerText = "Ready to scan next ticket...";
             statusEl.className = "";
         }, 2000);
     })
-    .catch(() => {
-        document.getElementById("status").innerText = "❌ Connection error";
+    .catch((err) => {
+        document.getElementById("status").innerText =
+            "❌ Connection error: " + err.message;
         document.getElementById("status").className = "error";
         scanningEnabled = true;
     });
