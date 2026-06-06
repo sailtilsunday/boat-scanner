@@ -44,40 +44,19 @@ function onScanSuccess(decodedText) {
 
     document.getElementById("status").innerText = "Scanning...";
 
-    fetch(sheetUrl + "?ticket=" + encodeURIComponent(decodedText))
-        .then(response => response.text())
-        .then(data => {
+    const img = new Image();
 
-            console.log("RESPONSE:", data);
+    img.onload = function () {
+        document.getElementById("status").innerText =
+            "✅ Checked in (sent)";
+    };
 
-            let statusDiv = document.getElementById("status");
+    img.onerror = function () {
+        document.getElementById("status").innerText =
+            "❌ Connection error";
+    };
 
-            if (data.startsWith("CHECKED_IN")) {
-
-                let name = data.split(":")[1];
-                statusDiv.innerText = "✅ " + name + " checked in!";
-                statusDiv.className = "ok";
-
-            } else if (data === "ALREADY_CHECKED_IN") {
-
-                statusDiv.innerText = "⚠️ Already checked in!";
-                statusDiv.className = "warn";
-
-            } else {
-
-                statusDiv.innerText = "❌ Invalid ticket!";
-                statusDiv.className = "bad";
-            }
-
-        })
-        .catch(error => {
-
-            console.log("ERROR:", error);
-
-            document.getElementById("status").innerText =
-                "❌ Connection error: " + error.message;
-
-        });
+    img.src = sheetUrl + "?ticket=" + encodeURIComponent(decodedText);
 }
 
 function onScanFailure(error) {
