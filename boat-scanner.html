@@ -56,48 +56,28 @@ function onScanSuccess(decodedText) {
 
     const url = sheetUrl + "?ticket=" + encodeURIComponent(decodedText);
 
-    console.log("REQUEST:", url);
+    console.log("OPENING URL:", url);
 
-    fetch(url)
-        .then(function(response) {
-            return response.text();
-        })
-        .then(function(data) {
+    // Open Apps Script as real browser request (bypasses CORS completely)
+    const win = window.open(url, "_blank");
 
-            console.log("RESPONSE:", data);
+    if (!win) {
+        document.getElementById("status").innerText =
+            "❌ Popup blocked - check browser settings";
+        return;
+    }
 
-            const status = document.getElementById("status");
+    // Give it time to hit Apps Script, then close tab
+    setTimeout(() => {
+        try {
+            win.close();
+        } catch (e) {
+            console.log("Could not auto-close tab:", e);
+        }
+    }, 800);
 
-            if (data.startsWith("CHECKED_IN")) {
-
-                const name = data.split(":")[1] || "Guest";
-
-                status.innerText = "✅ " + name + " checked in!";
-                status.className = "ok";
-
-            } 
-            else if (data === "ALREADY_CHECKED_IN") {
-
-                status.innerText = "⚠️ Already checked in!";
-                status.className = "warn";
-
-            } 
-            else {
-
-                status.innerText = "❌ Invalid ticket!";
-                status.className = "bad";
-
-            }
-
-        })
-        .catch(function(error) {
-
-            console.log("ERROR:", error);
-
-            document.getElementById("status").innerText =
-                "❌ Connection error";
-
-        });
+    document.getElementById("status").innerText =
+        "✅ Ticket sent";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
