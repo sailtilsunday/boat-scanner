@@ -51,6 +51,7 @@ let lastScan = "";
 let scanningEnabled = true;
 
 function handleScan(decodedText) {
+    alert(decodedText);
     if (!scanningEnabled || decodedText === lastScan) return;
 
     scanningEnabled = false;
