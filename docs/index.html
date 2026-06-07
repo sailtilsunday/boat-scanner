@@ -44,48 +44,58 @@
 <div id="status">Waiting to scan...</div>
 
 <script>
-const sheetUrl = "https://script.google.com/macros/s/AKfycbzh2wPeWJD0NeqnYjPYjFQLr88IcYUrf-N6D758PGldxqhpDiYw2XS8iZSRJvwhT1F1Lw/exec";
 
-// Prevent double scans too quickly
+const sheetUrl = "https://script.google.com/macros/s/AKfycbxn7u9ZGGnXLQak-tat4wN2hUm0DrZgeXrJI4hL32Cj_mn2vK_9EO4uHaxTFoGpUr1cjQ/exec";
+
+// Prevent double scans
 let lastScan = "";
 let scanningEnabled = true;
 
+// =======================
+// HANDLE SCAN
+// =======================
 function handleScan(decodedText) {
+
     if (!scanningEnabled || decodedText === lastScan) return;
 
     scanningEnabled = false;
     lastScan = decodedText;
 
-    document.getElementById("status").innerText = "Checking ticket...";
+    const statusEl = document.getElementById("status");
+    statusEl.innerText = "Checking ticket...";
+    statusEl.className = "";
 
+    // -----------------------
+    // Extract ticket safely
+    // -----------------------
     let ticket = decodedText.trim();
 
-    // If QR contains a full URL, extract the ticket parameter
+    // If QR contains full URL → extract ticket param
     if (ticket.startsWith("http")) {
         try {
-            ticket = new URL(ticket).searchParams.get("ticket");
+            const url = new URL(ticket);
+            ticket = url.searchParams.get("ticket");
         } catch (e) {
-            document.getElementById("status").innerText = "❌ Invalid QR format";
-            document.getElementById("status").className = "error";
+            statusEl.innerText = "❌ Invalid QR format";
+            statusEl.className = "error";
             scanningEnabled = true;
             return;
         }
     }
 
     if (!ticket) {
-        document.getElementById("status").innerText = "❌ No ticket found";
-        document.getElementById("status").className = "error";
+        statusEl.innerText = "❌ No ticket found";
+        statusEl.className = "error";
         scanningEnabled = true;
         return;
     }
 
-    const ticket = decodedText.trim();
-
-    fetch("https://script.google.com/macros/s/AKfycbxn7u9ZGGnXLQak-tat4wN2hUm0DrZgeXrJI4hL32Cj_mn2vK_9EO4uHaxTFoGpUr1cjQ/exec" + "?ticket=" + encodeURIComponent(ticket))
+    // -----------------------
+    // Call Apps Script backend
+    // -----------------------
+    fetch(sheetUrl + "?ticket=" + encodeURIComponent(ticket))
     .then(res => res.text())
     .then(data => {
-
-        let statusEl = document.getElementById("status");
 
         if (data.startsWith("CHECKED_IN")) {
             statusEl.innerText = "✅ " + data.split(":")[1] + " checked in";
@@ -105,19 +115,24 @@ function handleScan(decodedText) {
             statusEl.innerText = "Ready to scan next ticket...";
             statusEl.className = "";
         }, 2000);
+
     })
     .catch(err => {
-        document.getElementById("status").innerText =
-            "Connection error: " + err.message;
+        statusEl.innerText = "❌ Connection error: " + err.message;
+        statusEl.className = "error";
         scanningEnabled = true;
     });
 }
-  
-// Start camera scanner
+
+// =======================
+// START CAMERA SAFELY
+// =======================
 const html5QrCode = new Html5Qrcode("reader");
 
-Html5Qrcode.getCameras().then(devices => {
+Html5Qrcode.getCameras()
+.then(devices => {
     if (devices && devices.length) {
+
         html5QrCode.start(
             { facingMode: "environment" },
             { fps: 10, qrbox: 250 },
@@ -126,11 +141,17 @@ Html5Qrcode.getCameras().then(devices => {
             document.getElementById("status").innerText =
                 "Camera error: " + err;
         });
+
     } else {
         document.getElementById("status").innerText =
             "No camera found";
     }
+})
+.catch(err => {
+    document.getElementById("status").innerText =
+        "Camera permission error: " + err;
 });
+
 </script>
 
 </body>
