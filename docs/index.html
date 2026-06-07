@@ -51,13 +51,33 @@ let lastScan = "";
 let scanningEnabled = true;
 
 function handleScan(decodedText) {
-    alert(decodedText);
     if (!scanningEnabled || decodedText === lastScan) return;
 
     scanningEnabled = false;
     lastScan = decodedText;
 
     document.getElementById("status").innerText = "Checking ticket...";
+
+    let ticket = decodedText.trim();
+
+    // If QR contains a full URL, extract the ticket parameter
+    if (ticket.startsWith("http")) {
+        try {
+            ticket = new URL(ticket).searchParams.get("ticket");
+        } catch (e) {
+            document.getElementById("status").innerText = "❌ Invalid QR format";
+            document.getElementById("status").className = "error";
+            scanningEnabled = true;
+            return;
+        }
+    }
+
+    if (!ticket) {
+        document.getElementById("status").innerText = "❌ No ticket found";
+        document.getElementById("status").className = "error";
+        scanningEnabled = true;
+        return;
+    }
 
     const ticket = decodedText.trim();
 
