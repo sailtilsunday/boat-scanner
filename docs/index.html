@@ -54,11 +54,13 @@ let scanningEnabled = true;
 // =======================
 // HANDLE SCAN
 // =======================
-function handleScan(decodedText) {
+async function handleScan(decodedText) {
 
-    if (!scanningEnabled || decodedText === lastScan) return;
+    if (!scanningEnabled) return;
 
     scanningEnabled = false;
+
+    await html5QrCode.pause(true);
     lastScan = decodedText;
 
     const statusEl = document.getElementById("status");
