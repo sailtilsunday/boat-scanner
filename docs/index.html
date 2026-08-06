@@ -112,11 +112,12 @@ async function handleScan(decodedText) {
             statusEl.className = "error";
         }
 
-        setTimeout(() => {
-            scanningEnabled = true;
-            statusEl.innerText = "Ready to scan next ticket...";
-            statusEl.className = "";
-        }, 2000);
+      setTimeout(() => {
+          html5QrCode.resume();
+          scanningEnabled = true;
+          statusEl.innerText = "Ready to scan next ticket...";
+          statusEl.className = "";
+        }, 1500);
 
     })
     .catch(err => {
