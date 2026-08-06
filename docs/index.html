@@ -56,11 +56,10 @@ let scanningEnabled = true;
 // =======================
 async function handleScan(decodedText) {
 
-    if (!scanningEnabled) return;
+    if (!scanningEnabled || decodedText === lastScan) return;
 
     scanningEnabled = false;
 
-    await html5QrCode.pause(true);
     lastScan = decodedText;
 
     const statusEl = document.getElementById("status");
@@ -113,10 +112,10 @@ async function handleScan(decodedText) {
         }
 
       setTimeout(() => {
-          html5QrCode.resume();
           scanningEnabled = true;
           statusEl.innerText = "Ready to scan next ticket...";
           statusEl.className = "";
+
         }, 1500);
 
     })
