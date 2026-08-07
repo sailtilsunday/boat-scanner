@@ -59,7 +59,6 @@ async function handleScan(decodedText) {
     if (!scanningEnabled) return;
 
     scanningEnabled = false;
-    await html5QrCode.pause(true);
 
     lastScan = decodedText;
 
@@ -114,8 +113,6 @@ async function handleScan(decodedText) {
         }
 
       setTimeout(() => {
-        
-          html5QrCode.resume();
       
           scanningEnabled = true;
           statusEl.innerText = "Ready to scan next ticket...";
@@ -134,35 +131,40 @@ async function handleScan(decodedText) {
 // =======================
 // START CAMERA SAFELY
 // =======================
-const html5QrCode = new Html5Qrcode("reader");
 
-Html5Qrcode.getCameras()
+const html5QrCode = new Html5QrCode("reader");
+
+Html5QrCode.getCameras()
 .then(devices => {
+
     if (devices && devices.length) {
 
         html5QrCode.start(
             { facingMode: "environment" },
             {
-              fps: 15,
-              qrbox: {
-                width: 300,
-                height: 300
-              }
-            }
+                fps: 10,
+                qrbox: 250
+            },
             handleScan
-        ).catch(err => {
+        )
+        .catch(err => {
             document.getElementById("status").innerText =
-                "Camera error: " + err;
+                "Camera start error: " + err;
         });
 
     } else {
+
         document.getElementById("status").innerText =
             "No camera found";
+
     }
+
 })
 .catch(err => {
+
     document.getElementById("status").innerText =
         "Camera permission error: " + err;
+
 });
 
 </script>
