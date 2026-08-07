@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Boat Party Scanner 🚤</title>
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <script src="https://unpkg.com/html5-qrcode"></script>
@@ -29,145 +31,323 @@
       font-weight: bold;
     }
 
-    .success { color: green; }
-    .error { color: red; }
-    .warning { color: orange; }
+    .success {
+      color: green;
+    }
+
+    .error {
+      color: red;
+    }
+
+    .warning {
+      color: orange;
+    }
+
   </style>
+
 </head>
+
 
 <body>
 
+
 <h2>🚤 Boat Party Check-In</h2>
+
 <p>Scan guest QR ticket</p>
 
+
 <div id="reader"></div>
-<div id="status">Waiting to scan...</div>
+
+<div id="status">
+  Waiting to scan...
+</div>
+
+
 
 <script>
 
+
 const sheetUrl = "https://script.google.com/macros/s/AKfycbxn7u9ZGGnXLQak-tat4wN2hUm0DrZgeXrJI4hL32Cj_mn2vK_9EO4uHaxTFoGpUr1cjQ/exec";
 
-// Prevent double scans
-let lastScan = "";
+
+// Scanner state
 let scanningEnabled = true;
+let lastScan = "";
+
+
+// Create scanner
+const html5QrCode = new Html5Qrcode("reader");
+
+
 
 // =======================
-// HANDLE SCAN
+// HANDLE QR SCAN
 // =======================
+
 async function handleScan(decodedText) {
 
-    if (!scanningEnabled) return;
 
-    scanningEnabled = false;
+  if (!scanningEnabled) {
+    return;
+  }
 
-    lastScan = decodedText;
 
-    const statusEl = document.getElementById("status");
-    statusEl.innerText = "🔍 Checking ticket...";
-    statusEl.className = "";
+  scanningEnabled = false;
 
-    // -----------------------
-    // Extract ticket safely
-    // -----------------------
-    let ticket = decodedText.trim();
 
-    // If QR contains full URL → extract ticket param
-    if (ticket.startsWith("http")) {
-        try {
-            const url = new URL(ticket);
-            ticket = url.searchParams.get("ticket");
-        } catch (e) {
-            statusEl.innerText = "❌ Invalid QR format";
-            statusEl.className = "error";
-            scanningEnabled = true;
-            return;
-        }
+  const statusEl = document.getElementById("status");
+
+
+  // Pause camera while checking
+  try {
+    await html5QrCode.pause(true);
+  } catch(e) {
+    console.log("Pause skipped");
+  }
+
+
+
+  statusEl.innerText = "🔍 Checking ticket...";
+  statusEl.className = "";
+
+
+
+  let ticket = decodedText.trim();
+
+
+
+  // Extract ticket ID from QR URL
+  if (ticket.startsWith("http")) {
+
+    try {
+
+      const url = new URL(ticket);
+
+      ticket = url.searchParams.get("ticket");
+
     }
 
-    if (!ticket) {
-        statusEl.innerText = "❌ No ticket found";
-        statusEl.className = "error";
-        scanningEnabled = true;
-        return;
+    catch(e) {
+
+      statusEl.innerText = "❌ Invalid QR format";
+      statusEl.className = "error";
+
+      resetScanner();
+
+      return;
+
     }
 
-    // -----------------------
-    // Call Apps Script backend
-    // -----------------------
-    fetch(sheetUrl + "?ticket=" + encodeURIComponent(ticket))
-    .then(res => res.text())
-    .then(data => {
-        console.log(data);
-        if (data.startsWith("CHECKED_IN")) {
-            const name = data.replace("CHECKED_IN:", "").trim();
-            statusEl.innerText = "✅ " + name + " checked in";
-            statusEl.className = "success";
-        } 
-        else if (data === "ALREADY_CHECKED_IN") {
-            statusEl.innerText = "⚠️ Ticket already used";
-            statusEl.className = "warning";
-        } 
-        else {
-            statusEl.innerText = "❌ Invalid ticket";
-            statusEl.className = "error";
-        }
+  }
 
-      setTimeout(() => {
-      
-          scanningEnabled = true;
-          statusEl.innerText = "Ready to scan next ticket...";
-          statusEl.className = "";
 
-        }, 500);
 
-    })
-    .catch(err => {
-        statusEl.innerText = "❌ Connection error: " + err.message;
-        statusEl.className = "error";
-        scanningEnabled = true;
-    });
+  if (!ticket) {
+
+    statusEl.innerText = "❌ No ticket found";
+    statusEl.className = "error";
+
+    resetScanner();
+
+    return;
+
+  }
+
+
+
+  fetch(
+    sheetUrl + "?ticket=" + encodeURIComponent(ticket)
+  )
+
+  .then(response => response.text())
+
+  .then(data => {
+
+
+    console.log("Backend response:", data);
+
+
+
+    if (data.startsWith("CHECKED_IN")) {
+
+
+      const name = data
+        .replace("CHECKED_IN:", "")
+        .trim();
+
+
+      statusEl.innerText =
+        "✅ " + name + " checked in";
+
+
+      statusEl.className = "success";
+
+
+    }
+
+
+    else if (data === "ALREADY_CHECKED_IN") {
+
+
+      statusEl.innerText =
+        "⚠️ Ticket already used";
+
+
+      statusEl.className = "warning";
+
+
+    }
+
+
+    else {
+
+
+      statusEl.innerText =
+        "❌ Invalid ticket";
+
+
+      statusEl.className = "error";
+
+
+    }
+
+
+
+    setTimeout(() => {
+
+      resetScanner();
+
+    }, 500);
+
+
+
+  })
+
+
+  .catch(error => {
+
+
+    statusEl.innerText =
+      "❌ Connection error: " + error.message;
+
+
+    statusEl.className = "error";
+
+
+    resetScanner();
+
+
+  });
+
+
+
 }
 
+
+
+
 // =======================
-// START CAMERA SAFELY
+// RESET FOR NEXT SCAN
 // =======================
 
-const html5QrCode = new Html5QrCode("reader");
+function resetScanner() {
 
-Html5QrCode.getCameras()
-.then(devices => {
 
-    if (devices && devices.length) {
+  try {
 
-        html5QrCode.start(
-            { facingMode: "environment" },
-            {
-                fps: 10,
-                qrbox: 250
-            },
-            handleScan
-        )
-        .catch(err => {
-            document.getElementById("status").innerText =
-                "Camera start error: " + err;
-        });
+    html5QrCode.resume();
 
-    } else {
+  }
 
-        document.getElementById("status").innerText =
-            "No camera found";
+  catch(e) {
 
-    }
+    console.log("Resume skipped");
 
-})
-.catch(err => {
+  }
+
+
+  scanningEnabled = true;
+
+
+  setTimeout(() => {
 
     document.getElementById("status").innerText =
-        "Camera permission error: " + err;
+      "Ready to scan next ticket...";
+
+
+    document.getElementById("status").className = "";
+
+
+  }, 300);
+
+
+}
+
+
+
+
+// =======================
+// START CAMERA
+// =======================
+
+
+Html5Qrcode.getCameras()
+
+.then(devices => {
+
+
+  if (devices && devices.length) {
+
+
+    html5QrCode.start(
+
+      {
+        facingMode: "environment"
+      },
+
+      {
+        fps: 15,
+        qrbox: {
+          width: 300,
+          height: 300
+        }
+      },
+
+      handleScan
+
+    );
+
+
+  }
+
+
+  else {
+
+
+    document.getElementById("status").innerText =
+      "No camera found";
+
+
+  }
+
+
+})
+
+
+.catch(err => {
+
+
+  document.getElementById("status").innerText =
+    "Camera permission error: " + err;
+
 
 });
 
+
+
 </script>
 
+
 </body>
+
 </html>
