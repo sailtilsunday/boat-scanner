@@ -56,9 +56,10 @@ let scanningEnabled = true;
 // =======================
 async function handleScan(decodedText) {
 
-    if (!scanningEnabled || decodedText === lastScan) return;
+    if (!scanningEnabled) return;
 
     scanningEnabled = false;
+    await html5QrCode.pause(true);
 
     lastScan = decodedText;
 
@@ -99,7 +100,8 @@ async function handleScan(decodedText) {
     .then(data => {
         console.log(data);
         if (data.startsWith("CHECKED_IN")) {
-            statusEl.innerText = "✅ " + data;
+            const name = data.replace("CHECKED_IN:", "").trim();
+            statusEl.innerText = "✅ " + name + " checked in";
             statusEl.className = "success";
         } 
         else if (data === "ALREADY_CHECKED_IN") {
@@ -112,6 +114,9 @@ async function handleScan(decodedText) {
         }
 
       setTimeout(() => {
+        
+          html5QrCode.resume();
+      
           scanningEnabled = true;
           statusEl.innerText = "Ready to scan next ticket...";
           statusEl.className = "";
@@ -137,7 +142,13 @@ Html5Qrcode.getCameras()
 
         html5QrCode.start(
             { facingMode: "environment" },
-            { fps: 10, qrbox: 250 },
+            {
+              fps: 15,
+              qrbox: {
+                width: 300,
+                height: 300
+              }
+            }
             handleScan
         ).catch(err => {
             document.getElementById("status").innerText =
