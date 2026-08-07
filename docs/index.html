@@ -97,9 +97,9 @@ async function handleScan(decodedText) {
     fetch(sheetUrl + "?ticket=" + encodeURIComponent(ticket))
     .then(res => res.text())
     .then(data => {
-
+        console.log(data);
         if (data.startsWith("CHECKED_IN")) {
-            statusEl.innerText = "✅ " + data.split(":")[1] + " checked in";
+            statusEl.innerText = "✅ " + data;
             statusEl.className = "success";
         } 
         else if (data === "ALREADY_CHECKED_IN") {
