@@ -42,7 +42,6 @@
     .warning {
       color: orange;
     }
-
   </style>
 
 </head>
@@ -72,7 +71,6 @@ const sheetUrl = "https://script.google.com/macros/s/AKfycbxn7u9ZGGnXLQak-tat4wN
 
 // Scanner state
 let scanningEnabled = true;
-let lastScan = "";
 
 
 // Create scanner
@@ -101,10 +99,10 @@ async function handleScan(decodedText) {
   // Pause camera while checking
   try {
     await html5QrCode.pause(true);
-  } catch(e) {
+  } 
+  catch(e) {
     console.log("Pause skipped");
   }
-
 
 
   statusEl.innerText = "🔍 Checking ticket...";
@@ -213,11 +211,12 @@ async function handleScan(decodedText) {
 
 
 
+    // Allow next scan
     setTimeout(() => {
 
       resetScanner();
 
-    }, 200);
+    }, 500);
 
 
 
@@ -252,19 +251,38 @@ async function handleScan(decodedText) {
 
 function resetScanner() {
 
-  try {
-    html5QrCode.resume();
-  }
-  catch(e) {
-    console.log("Resume skipped");
-  }
 
-  scanningEnabled = true;
+  setTimeout(() => {
 
-  document.getElementById("status").innerText =
-    "Ready to scan next ticket...";
 
-  document.getElementById("status").className = "";
+    try {
+
+      html5QrCode.resume();
+
+    }
+
+    catch(e) {
+
+      console.log("Resume skipped");
+
+    }
+
+
+
+    scanningEnabled = true;
+
+
+
+    document.getElementById("status").innerText =
+      "Ready to scan next ticket...";
+
+
+    document.getElementById("status").className = "";
+
+
+
+  }, 300);
+
 
 }
 
@@ -291,16 +309,19 @@ Html5Qrcode.getCameras()
       },
 
       {
-        fps: 20,
-        qrbox: {
-          width: 320,
-          height: 320
-        }
+        fps: 10,
+        qrbox: 250
       },
 
       handleScan
 
-    );
+    )
+    .catch(err => {
+
+      document.getElementById("status").innerText =
+        "Camera start error: " + err;
+
+    });
 
 
   }
