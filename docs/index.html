@@ -217,7 +217,7 @@ async function handleScan(decodedText) {
 
       resetScanner();
 
-    }, 500);
+    }, 200);
 
 
 
@@ -252,34 +252,19 @@ async function handleScan(decodedText) {
 
 function resetScanner() {
 
-
   try {
-
     html5QrCode.resume();
-
   }
-
   catch(e) {
-
     console.log("Resume skipped");
-
   }
-
 
   scanningEnabled = true;
 
+  document.getElementById("status").innerText =
+    "Ready to scan next ticket...";
 
-  setTimeout(() => {
-
-    document.getElementById("status").innerText =
-      "Ready to scan next ticket...";
-
-
-    document.getElementById("status").className = "";
-
-
-  }, 300);
-
+  document.getElementById("status").className = "";
 
 }
 
@@ -306,10 +291,10 @@ Html5Qrcode.getCameras()
       },
 
       {
-        fps: 15,
+        fps: 20,
         qrbox: {
-          width: 300,
-          height: 300
+          width: 320,
+          height: 320
         }
       },
 
